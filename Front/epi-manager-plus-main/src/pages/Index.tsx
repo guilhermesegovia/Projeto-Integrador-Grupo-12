@@ -18,12 +18,8 @@ const Index = () => {
         <div className="container relative z-10">
           <div className="max-w-3xl mx-auto text-center text-primary-foreground">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Gestão de Segurança do Trabalho
+              Sistema de Segurança do Trabalho
             </h1>
-            <p className="text-lg md:text-xl mb-8 opacity-95">
-              Controle completo dos equipamentos de proteção individual da sua empresa.
-              Segurança, conformidade e eficiência em um único lugar.
-            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
@@ -95,14 +91,6 @@ const Index = () => {
       <section className="py-20 bg-muted/30">
         <div className="container">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-              Sobre Nós
-            </h2>
-            <p className="text-lg text-muted-foreground text-center mb-6">
-              O SafeWork Pro é uma solução completa para gestão de segurança do trabalho, 
-              desenvolvida para facilitar o controle e distribuição de equipamentos de proteção 
-              individual nas empresas.
-            </p>
             <p className="text-lg text-muted-foreground text-center">
               Com anos de experiência no setor, oferecemos uma plataforma confiável e eficiente 
               que ajuda empresas a manterem a conformidade com as normas de segurança.
@@ -157,7 +145,7 @@ const Index = () => {
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <p className="flex items-center justify-center gap-2">
                       <Phone className="w-4 h-4" />
-                      (11) 3000-0000
+                      (11) 9987-8876
                     </p>
                     <p className="flex items-center justify-center gap-2">
                       <Mail className="w-4 h-4" />

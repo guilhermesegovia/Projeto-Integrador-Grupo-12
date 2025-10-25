@@ -10,7 +10,7 @@ const Footer = () => {
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-hero">
                 <Shield className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="font-bold text-xl">SafeWork Pro</span>
+              <span className="font-bold text-xl">Security Pro</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Gestão completa de equipamentos de proteção individual para sua empresa.
@@ -22,7 +22,7 @@ const Footer = () => {
             <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-primary" />
-                <span>contato@safeworkpro.com.br</span>
+                <span>contato@securitypro.com.br</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-primary" />
@@ -44,7 +44,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 SafeWork Pro. Todos os direitos reservados.</p>
+          <p>&copy; 2025 Security Pro. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

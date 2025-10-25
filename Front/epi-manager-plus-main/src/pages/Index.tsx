@@ -65,7 +65,7 @@ const Index = () => {
                 <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-4">
                   <BarChart3 className="w-6 h-6 text-secondary" />
                 </div>
-                <CardTitle>Controle de Estoque</CardTitle>
+                <CardTitle>Controle de EPs</CardTitle>
                 <CardDescription>
                   Acompanhe o estoque de EPIs com estatísticas detalhadas e alertas de validade.
                 </CardDescription>

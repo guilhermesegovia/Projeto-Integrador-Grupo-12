@@ -119,4 +119,5 @@ export class FuncionarioService {
     getHistoricoEPI(funcionarioCpf: string): HistoricoEPI[] {
         return this.historicoEPI.filter(historicoEPI => historicoEPI.funcionarioCpf === funcionarioCpf);
     }
+
 }

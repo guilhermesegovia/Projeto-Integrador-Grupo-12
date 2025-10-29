@@ -25,6 +25,15 @@ export class EmpresaService {
         return EmpresaCriado
     }
 
+      autenticar(email: string, senha: string): Empresa {
+    const Empresa = this.Empresas.find((empresa) => empresa.getemail() === email);
+    if (!Empresa || !Empresa.verifyPassword(senha)) {
+      throw new Error("Email ou senha inválidos");
+    }
+    return Empresa;
+  }
+
+
     getEmpresas(): Empresa[] {
         return this.Empresas;
     }

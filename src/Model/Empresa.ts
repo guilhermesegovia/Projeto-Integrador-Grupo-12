@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 export class Empresa {
   constructor(
     private empresa: string,
@@ -23,8 +25,16 @@ export class Empresa {
     email: string,
     senha: string
   ) {
+    const id = crypto.randomUUID();
+    const hashedPassword = bcrypt.hashSync(senha);
     return new Empresa(empresa, cnpj, endereco, email, senha);
   }
+
+    verifyPassword(senha: string): boolean {
+    return bcrypt.compareSync(senha, this.senha);
+    
+  }
+
 
   getempresa(): string {
     return this.empresa;

@@ -52,7 +52,7 @@ export function FuncionarioController() {
         funcionario = service.consultarFuncionarioporcpf(cpf as any);
       } catch (e: any) {
 
-        return res.status(400).json({ mensagem: e.message });
+        return res.status(400   ).json({ mensagem: e.message });
       }
     } 
 

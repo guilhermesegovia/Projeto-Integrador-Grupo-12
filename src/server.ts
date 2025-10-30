@@ -1,7 +1,7 @@
 import express from "express";
 import { EmpresaController } from "./Controller/EmpresaController";
 import { EPIController } from "./Controller/EpiController";
-import { FuncionarioController } from "./Controller/Funcionario";
+import { FuncionarioController } from "./Controller/FuncionarioController";
 export const app = express();
 
 app.use((req, res, next) => {

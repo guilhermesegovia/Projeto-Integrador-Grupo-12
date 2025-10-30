@@ -1,12 +1,12 @@
 export class EPI {
   constructor(
+    private epi: string,
     private data_entrada: Date,
     private tipo: string,
     private fabricante: string,
     private modouso: string,
     private CA: string,
     private validade: Date,
-    private epi: string,
     private cpfdofuncionario: string
   ) {
     
@@ -34,9 +34,9 @@ export class EPI {
     modouso: string,
     fabricante: string,
     data_entrada: Date,
-    cpfdofuncionario: string
+    cpfdofuncionario: string,
   ) {
-    return new EPI(epi, tipo, CA, validade, modouso, fabricante, data_entrada, cpfdofuncionario);
+    return new EPI(epi, data_entrada, tipo, fabricante, modouso, CA, validade,  cpfdofuncionario);
   }
 
   getepi(): string {
@@ -54,6 +54,7 @@ export class EPI {
   getvalidade(): Date {
     return this.validade;
   }
+
 
   getmodouso(): string {
     return this.modouso;

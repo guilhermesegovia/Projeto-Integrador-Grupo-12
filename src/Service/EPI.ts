@@ -1,26 +1,19 @@
-// src/service/epi.ts
 
-import { EPI } from "../Model/EPI"; // Importa a classe EPI
+import { EPI } from "../Model/EPI";
 
-// Usamos 'any' para imitar a tipagem do historico
 type HistoricoEPI = any;
 
-// Simula novo ID
 const generateId = () => crypto.randomUUID();
 
 export class EPIService {
-    // Lista de EPIs
-    lista: EPI[] = []; 
+    Epi: EPI[] = []; 
     
-    // Lista de Histórico de substituições
     historico: HistoricoEPI[] = []; 
 
-    // O construtor segue o padrão do PDF
     constructor(public armazenamentoEPI: EPI[] = []) {
-        this.lista = armazenamentoEPI;
+        this.Epi = armazenamentoEPI;
     }
 
-    // Cadastro de EPI
     createEPI(data: {
         epi: string,
         tipo: string,
@@ -32,8 +25,7 @@ export class EPIService {
         cpfdofuncionario: string
     }): EPI {
         
-        // Uso do static create da sua classe EPI para validação e criação
-        const epiCreated = EPI.create(
+        const EPICRIADO = EPI.create(
             data.epi,
             data.tipo,
             data.CA,
@@ -44,35 +36,32 @@ export class EPIService {
             data.cpfdofuncionario
         );
         
-        this.lista.push(epiCreated);
+        this.Epi.push(EPICRIADO);
         
-        return epiCreated;
+        return EPICRIADO;
     }
     
-    // 2. Visualização de EPI (Visualizar todos)
     getEPIs(): EPI[] {
-        return this.lista;
+        return this.Epi;
     }
 
-    // 3. Consulta de EPI através do CA
     getEPIByCA(caNumero: string): EPI | undefined {
-        return this.lista.find((epi) => epi.getCA() === caNumero);
+        return this.Epi.find((epi) => epi.getCA() === caNumero);
     }
 
-    // 4. Visualização de CA próximos de vencer
     visualizarCAsProximosDeVencer(diasLimite: number = 90): EPI[] {
         const dataLimite = new Date();
         dataLimite.setDate(dataLimite.getDate() + diasLimite); 
         
-        return this.lista.filter((epi) => {
-            // Filtra os EPIs cuja validade está entre hoje e a data limite
+        return this.Epi.filter((epi) => {
+
             return epi.getvalidade() <= dataLimite && epi.getvalidade() >= new Date(); 
         });
     }
 
-    // 5. Substituição de EPI perto do vencimento com histórico
-    substituirEPI(
-        identificadorFuncionario: string, // CPF ou ID do funcionário
+
+    substituirEPIpertovencimento(
+        identificadorFuncionario: string, // CPF funcionário
         novoEpiData: {
             epi: string,
             tipo: string,
@@ -84,12 +73,12 @@ export class EPIService {
             cpfdofuncionario: string
         }, 
         motivoSubstituicao: string
-    ): any { // Retorna 'any' para não criar nova tipagem
+    ): any {
         
-        // 5a. Cria e registra o novo EPI (usando a função de cadastro)
+
         const novoEpi = this.createEPI(novoEpiData);
 
-        // 5b. Cria e registra o histórico da substituição como um objeto anônimo ('any')
+
         const historicoRegistro = {
             id: generateId(),
             identificadorFuncionario: identificadorFuncionario,
@@ -104,8 +93,21 @@ export class EPIService {
         return historicoRegistro;
     }
     
-    // Função auxiliar para consultar o histórico (retorna any[])
-    getHistoricoEntregas(identificadorFuncionario: string): any[] {
+
+    getCONSULTAHISTORICO(identificadorFuncionario: string): any[] {
         return this.historico.filter(h => h.identificadorFuncionario === identificadorFuncionario);
     }
+
+  filtrarEPIPorDataparaExpirar(dataMin: Date, dataMax: Date): EPI[] {
+    return this.Epi.filter((EPI) => {
+      const epiVali = EPI.getvalidade();
+      return (
+        epiVali !== undefined &&
+        epiVali >= dataMin &&
+        epiVali <= dataMax
+      );
+    });
+  }
+
+
 }

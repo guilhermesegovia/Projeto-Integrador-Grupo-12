@@ -45,11 +45,8 @@ export class FuncionarioService {
         return funcionarioCriado;
     }
     
-    consultarFuncionarioporcpf(identificador: { cpf?: string }): Funcionario | undefined {
-        if (identificador.cpf) {
+    consultarFuncionarioporcpf(identificador: { cpf: string }): Funcionario | undefined {
             return this.lista.find((Funcionario) => Funcionario.getcpf() === identificador.cpf);
-        }
-        
 
     }
 

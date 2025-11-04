@@ -1,0 +1,17 @@
+### USUÁRIOS
+
+### Listar todos os usuários
+GET http://localhost:3000/funcionarios
+
+###
+
+### Criar usuário
+POST http://localhost:3000/funcionarios
+content-type: application/json
+
+{
+  "nome": "Pedro",
+  "cpf": "123123123",
+  "setor": "Chão de fábrica",
+  "cargo": "Chefe"
+}

@@ -7,14 +7,12 @@ export class EPI {
     private modouso: string,
     private CA: string,
     private validade: Date,
-    private cpfdofuncionario: string
   ) {
     
     if (!fabricante) throw new Error("Fabricante Obrigatorio");
     if (!CA) throw new Error("Número do CA Obrigatorio");
     if (!validade) throw new Error("Validade Obrigatoria");
     if (!modouso) throw new Error("Modo de uso Obrigatorio");
-    if (!cpfdofuncionario) throw new Error("CPF obrigatorio");
     if (!tipo) throw new Error("Tipo do EPI Obrigatorio");
     if (!epi) throw new Error("Nome do EPI Obrigatorio");
     if (!data_entrada) throw new Error("Data de entrada obrigatoria");
@@ -34,9 +32,9 @@ export class EPI {
     modouso: string,
     fabricante: string,
     data_entrada: Date,
-    cpfdofuncionario: string,
+
   ) {
-    return new EPI(epi, data_entrada, tipo, fabricante, modouso, CA, validade,  cpfdofuncionario);
+    return new EPI(epi, data_entrada, tipo, fabricante, modouso, CA, validade,);
   }
 
   getepi(): string {
@@ -68,9 +66,6 @@ export class EPI {
     return this.data_entrada;
   }
 
-  getcpfdofuncionario(): string {
-    return this.cpfdofuncionario;
-  }
 
 // Área de "Set"
 

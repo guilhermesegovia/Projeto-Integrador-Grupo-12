@@ -1,3 +1,4 @@
+import { Funcionario } from "../Model/Funcionarios";
 import { app } from "../server"; 
 import { FuncionarioService } from "../Service/Funcionarios";
 
@@ -5,7 +6,7 @@ export function FuncionarioController() {
   const service = new FuncionarioService();
 
   
-  const formatarFuncionario = (funcionario: any) => ({
+  const formatarFuncionario = (funcionario: Funcionario) => ({
     nome: funcionario.getnome(),
     cpf: funcionario.getcpf(),
     setor: funcionario.getsetor(),
@@ -44,14 +45,14 @@ export function FuncionarioController() {
   app.get("/funcionarios/buscar", (req, res) => {
     const { cpf } = req.query; // Apenas CPF
 
-    let funcionario: any | undefined;
+    let funcionario: Funcionario[] | undefined;
 
 
     if (cpf) {
       try {
-        funcionario = service.consultarFuncionarioporcpf(cpf as any);
+         funcionario = service.consultarFuncionarioporcpf(cpf as string);
+         return res.status(200).json(funcionario);
       } catch (e: any) {
-
         return res.status(400   ).json({ mensagem: e.message });
       }
     } 
@@ -67,6 +68,6 @@ export function FuncionarioController() {
     }
 
 
-    return res.status(200).json(formatarFuncionario(funcionario));
+   
   });
 }

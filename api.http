@@ -1,11 +1,11 @@
-### USUÁRIOS
+### Funcionarios
 
-### Listar todos os usuários
+### Listar todos os funcionarios
 GET http://localhost:3000/funcionarios
 
 ###
 
-### Criar usuário
+### Criar Funcionario
 POST http://localhost:3000/funcionarios
 content-type: application/json
 
@@ -14,4 +14,72 @@ content-type: application/json
   "cpf": "123123123",
   "setor": "Chão de fábrica",
   "cargo": "Chefe"
+}
+
+
+### Buscar funcionário por CPF
+GET http://localhost:3000/funcionarios/buscar?cpf=123123123
+
+
+
+### EPI
+
+
+### Cadastrar novo EPI
+
+POST http://localhost:3000/epis
+Content-Type: application/json
+
+{
+  "epi": "Capacete de ",
+  "tipo": "Cabeça",
+  "CA": "1235",
+  "validade": "2026-05-01",
+  "modouso": "Uso obrigatório na área de produção",
+  "fabricante": "EPI Brasil",
+  "data_entrada": "2025-01-10"
+}
+
+### Listar todos os EPI´s
+GET http://localhost:3000/epis
+
+
+### Buscar EPI por CA
+GET http://localhost:3000/epis/buscar/ca?ca=1235
+
+
+### Buscar EPIs próximos do vencimento
+GET http://localhost:3000/epis/buscar/vencimento?dias=60
+
+
+### Buscar EPIs por intervalo escolhido
+GET http://localhost:3000/epis/buscar?dataMin=2025-01-01&dataMax=2025-12-31
+
+
+### EMPRESAS
+
+
+### Criar nova empresa
+POST http://localhost:3000/empresas
+Content-Type: application/json
+
+{
+  "empresa": "WebMotors",
+  "cnpj": "12345678000198",
+  "endereco": "Avenida Europa",
+  "email": "empresa@empresa.com",
+  "senha": "12345679"
+}
+
+### Listar todas as empresas
+GET http://localhost:3000/empresas
+
+
+### Autenticar empresa
+POST http://localhost:3000/empresas/autenticacao
+Content-Type: application/json
+
+{
+  "email": "contato@empresa.com",
+  "senha": "12345678"
 }

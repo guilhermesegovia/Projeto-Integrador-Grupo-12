@@ -1,38 +1,17 @@
-// src/service/funcionario.ts
 
 import { Funcionario } from "../Model/Funcionarios";
 
-type EPI = {
-    id: string;
-    nomeEPI: string;
-    caNumero: string;
-    caValidade: Date; 
-};
-
-type HistoricoEPI = {
-    id: string;
-    funcionarioCpf: string;
-    epi: EPI;
-    dataEntrega: Date;
-    dataVencimentoPrevisto: Date;
-    motivoSubstituicao: string;
-};
-
-const generateId = () => crypto.randomUUID();
 
 export class FuncionarioService {
-    lista: Funcionario[] = []; 
-    
-    listaEPIs: EPI[] = []; 
-    
-    historicoEPI: HistoricoEPI[] = []; 
+    lista: any[] = []; 
+    listaEPIs: any[] = []; 
+    historicoEPI: any[] = []; 
 
-    constructor(public armazenamentoFuncionario: Funcionario[] = []) {
+    constructor(public armazenamentoFuncionario: any[] = []) {
         this.lista = armazenamentoFuncionario;
     }
 
-    createFuncionario(data: { nome: string, cpf: string, setor: string, cargo: string }): Funcionario {
-        
+    createFuncionario(data: { nome: string, cpf: string, setor: string, cargo: string }): any {
         const funcionarioCriado = Funcionario.create(
             data.nome, 
             data.cpf, 
@@ -44,13 +23,12 @@ export class FuncionarioService {
         
         return funcionarioCriado;
     }
-    
-    consultarFuncionarioporcpf(identificador: { cpf: string }): Funcionario | undefined {
-            return this.lista.find((Funcionario) => Funcionario.getcpf() === identificador.cpf);
 
+    consultarFuncionarioporcpf(cpf: string ): any[] | undefined {
+        return this.lista.filter((funcionario) => funcionario.getcpf() === cpf);
     }
 
-    visualizarCAsProximosDoVencimento(diasLimite: number = 90): EPI[] {
+    visualizarCAsProximosDoVencimento(diasLimite: number = 90): any[] {
         const dataLimite = new Date();
         dataLimite.setDate(dataLimite.getDate() + diasLimite); 
         
@@ -63,25 +41,21 @@ export class FuncionarioService {
         funcionarioCpf: string, 
         novoEpiData: { nomeEPI: string, caNumero: string, caValidade: Date }, 
         motivo: string
-
-    ): HistoricoEPI {
-        
-        const funcionario = this.lista.find(Funcionario => Funcionario.getcpf() === funcionarioCpf);
+    ): any {
+        const funcionario = this.lista.find(funcionario => funcionario.getcpf() === funcionarioCpf);
         if (!funcionario) {
             throw new Error(`Funcionário com CPF ${funcionarioCpf} não encontrado.`);
         }
-        
 
-        const novoEpi: EPI = {
-            ...novoEpiData,
-            id: generateId()
+        const novoEpi = {
+            nomeEPI: novoEpiData.nomeEPI,
+            caNumero: novoEpiData.caNumero,
+            caValidade: novoEpiData.caValidade,
         };
         this.listaEPIs.push(novoEpi);
 
-
         const dataAtual = new Date();
-        const historico: HistoricoEPI = {
-            id: generateId(),
+        const historico = {
             funcionarioCpf: funcionarioCpf,
             epi: novoEpi,
             dataEntrega: dataAtual,
@@ -93,15 +67,12 @@ export class FuncionarioService {
         
         return historico;
     }
-    
 
-    getFuncionarios(): Funcionario[] {
+    getFuncionarios(): any[] {
         return this.lista;
     }
-    
 
-    getverHistoricoEpi(funcionarioCpf: string): HistoricoEPI[] {
+    getverHistoricoEpi(funcionarioCpf: string): any[] {
         return this.historicoEPI.filter(historicoEPI => historicoEPI.funcionarioCpf === funcionarioCpf);
     }
-
 }

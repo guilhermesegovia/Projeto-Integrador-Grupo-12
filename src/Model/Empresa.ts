@@ -25,7 +25,6 @@ export class Empresa {
     email: string,
     senha: string
   ) {
-    const id = crypto.randomUUID();
     const hashedPassword = bcrypt.hashSync(senha);
     return new Empresa(empresa, cnpj, endereco, email, senha);
   }

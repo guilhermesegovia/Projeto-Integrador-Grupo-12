@@ -95,14 +95,14 @@ export function EPIController() {
   
   app.post("/epis/substituicao", (req, res) => {
     try {
-      const { identificadorFuncionario, novoEpiData, motivoSubstituicao } = req.body;
+      const { Funcionario, novoEpiData, motivoSubstituicao } = req.body;
 
-      if (!identificadorFuncionario || !novoEpiData || !motivoSubstituicao) {
+      if (!Funcionario || !novoEpiData || !motivoSubstituicao) {
         throw new Error("Dados de substituição incompletos (CPF do funcionário, dados do novo EPI e motivo são obrigatórios).");
       }
 
       const historicoRegistro = service.substituirEPIpertovencimento(
-        identificadorFuncionario as string,
+        Funcionario as string,
         novoEpiData,
         motivoSubstituicao as string
       );

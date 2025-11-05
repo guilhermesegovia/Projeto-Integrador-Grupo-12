@@ -1,14 +1,11 @@
 
 import { EPI } from "../Model/EPI";
 
-type HistoricoEPI = any;
-
-const generateId = () => crypto.randomUUID();
 
 export class EPIService {
     Epi: EPI[] = []; 
     
-    historico: HistoricoEPI[] = []; 
+    historico: EPI[] = []; 
 
     constructor(public armazenamentoEPI: EPI[] = []) {
         this.Epi = armazenamentoEPI;
@@ -22,7 +19,7 @@ export class EPIService {
         modouso: string,
         fabricante: string,
         data_entrada: Date,
-        cpfdofuncionario: string
+
     }): EPI {
         
         const EPICRIADO = EPI.create(
@@ -33,7 +30,7 @@ export class EPIService {
             data.modouso,
             data.fabricante,
             data.data_entrada,
-            data.cpfdofuncionario
+
         );
         
         this.Epi.push(EPICRIADO);
@@ -61,7 +58,7 @@ export class EPIService {
 
 
     substituirEPIpertovencimento(
-        identificadorFuncionario: string, // CPF funcionário
+        Funcionario: string, // CPF funcionário
         novoEpiData: {
             epi: string,
             tipo: string,
@@ -70,33 +67,13 @@ export class EPIService {
             modouso: string,
             fabricante: string,
             data_entrada: Date,
-            cpfdofuncionario: string
+
         }, 
         motivoSubstituicao: string
     ): any {
         
-
-        const novoEpi = this.createEPI(novoEpiData);
-
-
-        const historicoRegistro = {
-            id: generateId(),
-            identificadorFuncionario: identificadorFuncionario,
-            epi: novoEpi, // O objeto EPI
-            dataEntrega: new Date(),
-            motivoSubstituicao: motivoSubstituicao, 
-            dataVencimentoPrevisto: novoEpi.getvalidade()
-        };
-
-        this.historico.push(historicoRegistro);
-        
-        return historicoRegistro;
     }
     
-
-    getCONSULTAHISTORICO(identificadorFuncionario: string): any[] {
-        return this.historico.filter(h => h.identificadorFuncionario === identificadorFuncionario);
-    }
 
   filtrarEPIPorDataparaExpirar(dataMin: Date, dataMax: Date): EPI[] {
     return this.Epi.filter((EPI) => {

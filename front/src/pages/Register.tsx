@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { API_URL } from "@/config/api";
 
 const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nomeEmpresa: "",
     cnpj: "",
@@ -20,7 +22,7 @@ const Register = () => {
     confirmarSenha: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.senha !== formData.confirmarSenha) {
@@ -32,7 +34,7 @@ const Register = () => {
       return;
     }
 
-    if (!formData.cnpj || formData.cnpj.length < 14) {
+    if (!formData.cnpj || formData.cnpj.replace(/\D/g, "").length < 14) {
       toast({
         title: "Erro",
         description: "CNPJ inválido.",
@@ -41,12 +43,43 @@ const Register = () => {
       return;
     }
 
-    toast({
-      title: "Cadastro realizado!",
-      description: "Empresa cadastrada com sucesso.",
-    });
+    setIsLoading(true);
 
-    navigate("/");
+    try {
+      const response = await fetch(`${API_URL}/empresas`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          empresa: formData.nomeEmpresa,
+          cnpj: formData.cnpj,
+          endereco: formData.endereco,
+          email: formData.email,
+          senha: formData.senha,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.erro || "Erro ao cadastrar empresa");
+      }
+
+      toast({
+        title: "Cadastro realizado!",
+        description: "Empresa cadastrada com sucesso.",
+      });
+
+      navigate("/login");
+    } catch (error: any) {
+      toast({
+        title: "Erro ao cadastrar",
+        description: error.message || "Ocorreu um erro ao cadastrar a empresa.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,13 +179,14 @@ const Register = () => {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                  <Button type="submit" className="flex-1">
-                    Cadastrar Empresa
+                  <Button type="submit" className="flex-1" disabled={isLoading}>
+                    {isLoading ? "Cadastrando..." : "Cadastrar Empresa"}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => navigate("/")}
+                    disabled={isLoading}
                   >
                     Cancelar
                   </Button>

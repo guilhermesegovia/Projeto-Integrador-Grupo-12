@@ -29,46 +29,43 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.history.back()}
-            className="text-sm font-medium"
-          >
-            Voltar
-          </Button>
-          <Link
-            to="/epi-consulta"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/epi-consulta") ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            Consulta de EPI
-          </Link>
-          <Link
-            to="/employees"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive("/employees") ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            Funcionários
-          </Link>
-          <Link to="/register">
-            <Button variant="outline" size="sm">
-              Cadastrar Empresa
-            </Button>
-          </Link>
-          {isAuthenticated ? (
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-2" size={16} />
-              Sair
-            </Button>
-          ) : (
-            <Link to="/login">
-              <Button variant="outline" size="sm">
-                Login
+          {isAuthenticated && (
+            <>
+              <Link
+                to="/epi-consulta"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive("/epi-consulta") ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Consulta de EPI
+              </Link>
+              <Link
+                to="/employees"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive("/employees") ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Funcionários
+              </Link>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="mr-2" size={16} />
+                Sair
               </Button>
-            </Link>
+            </>
+          )}
+          {!isAuthenticated && (
+            <>
+              <Link to="/login">
+                <Button variant="outline" size="sm">
+                  Login
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button size="sm">
+                  Cadastrar Empresa
+                </Button>
+              </Link>
+            </>
           )}
         </div>
 
@@ -85,59 +82,53 @@ const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background">
           <div className="container py-4 flex flex-col gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                window.history.back();
-                setMobileMenuOpen(false);
-              }}
-              className="text-sm font-medium w-full justify-start"
-            >
-              Voltar
-            </Button>
-            <Link
-              to="/epi-consulta"
-              className={`text-sm font-medium ${
-                isActive("/epi-consulta") ? "text-primary" : "text-muted-foreground"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Consulta de EPI
-            </Link>
-            <Link
-              to="/employees"
-              className={`text-sm font-medium ${
-                isActive("/employees") ? "text-primary" : "text-muted-foreground"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Funcionários
-            </Link>
-            <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">
-                Cadastrar Empresa
-              </Button>
-            </Link>
-            {isAuthenticated ? (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => {
-                  handleLogout();
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <LogOut className="mr-2" size={16} />
-                Sair
-              </Button>
-            ) : (
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full">
-                  Login
+            {isAuthenticated && (
+              <>
+                <Link
+                  to="/epi-consulta"
+                  className={`text-sm font-medium ${
+                    isActive("/epi-consulta") ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Consulta de EPI
+                </Link>
+                <Link
+                  to="/employees"
+                  className={`text-sm font-medium ${
+                    isActive("/employees") ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Funcionários
+                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <LogOut className="mr-2" size={16} />
+                  Sair
                 </Button>
-              </Link>
+              </>
+            )}
+            {!isAuthenticated && (
+              <>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button size="sm" className="w-full">
+                    Cadastrar Empresa
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
         </div>

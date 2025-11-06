@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Search, Shield, Plus } from "lucide-react";
+import { Search, Shield, Plus, AlertTriangle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { episApi } from "@/services/api";
 
 interface EPI {
   id: string;
@@ -34,6 +36,7 @@ const EpiConsulta = () => {
   const [activeTab, setActiveTab] = useState("consulta");
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedEpiForDetails, setSelectedEpiForDetails] = useState<EPI | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nomeEPI: "",
     tipoEquipamento: "",
@@ -43,30 +46,85 @@ const EpiConsulta = () => {
     prazoValidadeCA: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadEPIs();
+  }, []);
+
+  const loadEPIs = async () => {
+    try {
+      const epis = await episApi.buscarTodos();
+      setEpisCadastrados(epis.map((e: any) => ({
+        id: e.CA,
+        nomeEPI: e.epi,
+        tipoEquipamento: e.tipo,
+        ca: e.CA,
+        modoUtilizacao: e.modouso,
+        fabricante: e.fabricante,
+        prazoValidadeCA: e.validade.split('T')[0],
+      })));
+    } catch (error) {
+      console.error("Erro ao carregar EPIs:", error);
+    }
+  };
+
+  // Função para calcular dias até o vencimento
+  const getDaysUntilExpiry = (validade: string): number => {
+    const dataValidade = new Date(validade);
+    const hoje = new Date();
+    const diffTime = dataValidade.getTime() - hoje.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Função para obter o status de vencimento (vermelho, amarelo, verde)
+  const getExpiryStatus = (validade: string): 'expired' | 'critical' | 'warning' | 'good' => {
+    const days = getDaysUntilExpiry(validade);
+    if (days < 0) return 'expired'; // Vencido
+    if (days <= 1) return 'critical'; // 1 dia - vermelho
+    if (days <= 30) return 'warning'; // 30 dias - amarelo
+    if (days <= 90) return 'good'; // 90 dias - verde
+    return 'good'; // Mais de 90 dias - verde
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const novoEpi: EPI = {
-      id: Date.now().toString(),
-      ...formData
-    };
+    setIsLoading(true);
+    try {
+      await episApi.criar({
+        epi: formData.nomeEPI,
+        tipo: formData.tipoEquipamento,
+        CA: formData.ca,
+        validade: formData.prazoValidadeCA,
+        modouso: formData.modoUtilizacao,
+        fabricante: formData.fabricante,
+      });
 
-    setEpisCadastrados([...episCadastrados, novoEpi]);
+      toast({
+        title: "EPI cadastrado!",
+        description: "Equipamento registrado com sucesso no sistema.",
+      });
 
-    toast({
-      title: "EPI cadastrado!",
-      description: "Equipamento registrado com sucesso no sistema.",
-    });
+      setFormData({
+        nomeEPI: "",
+        tipoEquipamento: "",
+        ca: "",
+        modoUtilizacao: "",
+        fabricante: "",
+        prazoValidadeCA: "",
+      });
+      setSelectedEpiId("novo");
 
-    setFormData({
-      nomeEPI: "",
-      tipoEquipamento: "",
-      ca: "",
-      modoUtilizacao: "",
-      fabricante: "",
-      prazoValidadeCA: "",
-    });
-    setSelectedEpiId("novo");
+      await loadEPIs();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao cadastrar",
+        description: error.message || "Erro ao cadastrar EPI.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (
@@ -104,7 +162,7 @@ const EpiConsulta = () => {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!searchCA) {
       toast({
         title: "CA necessário",
@@ -113,10 +171,28 @@ const EpiConsulta = () => {
       });
       return;
     }
-    toast({
-      title: "Buscando EPI...",
-      description: `Pesquisando CA: ${searchCA}`,
-    });
+
+    try {
+      const resultado = await episApi.buscarPorCA(searchCA);
+      if (resultado) {
+        toast({
+          title: "EPI encontrado!",
+          description: `${resultado.epi} - CA: ${resultado.CA}`,
+        });
+      } else {
+        toast({
+          title: "Nenhum resultado",
+          description: "EPI não encontrado com este CA.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro na busca",
+        description: error.message || "Erro ao buscar EPI.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredEpis = episCadastrados.filter((epi) => {
@@ -252,47 +328,104 @@ const EpiConsulta = () => {
               </Card>
 
               <div className="grid gap-6">
-                {filteredEpis.map((epi) => (
-                  <Card key={epi.id} className="shadow-card">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Shield className="w-6 h-6 text-primary" />
+                {filteredEpis.map((epi) => {
+                  const status = getExpiryStatus(epi.prazoValidadeCA);
+                  const daysRemaining = getDaysUntilExpiry(epi.prazoValidadeCA);
+
+                  return (
+                    <Card
+                      key={epi.id}
+                      className={`shadow-card ${
+                        status === 'expired' || status === 'critical'
+                          ? 'border-destructive border-2'
+                          : status === 'warning'
+                          ? 'border-amber-500 border-2'
+                          : status === 'good' && daysRemaining <= 90
+                          ? 'border-green-500 border-2'
+                          : ''
+                      }`}
+                    >
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                            status === 'expired' || status === 'critical'
+                              ? 'bg-destructive/10'
+                              : status === 'warning'
+                              ? 'bg-amber-500/10'
+                              : 'bg-primary/10'
+                          }`}>
+                            <Shield className={`w-6 h-6 ${
+                              status === 'expired' || status === 'critical'
+                                ? 'text-destructive'
+                                : status === 'warning'
+                                ? 'text-amber-500'
+                                : 'text-primary'
+                            }`} />
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-xl">{epi.nomeEPI}</CardTitle>
+                            <CardDescription>CA: {epi.ca}</CardDescription>
+                          </div>
+                          {status === 'expired' && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Vencido
+                            </Badge>
+                          )}
+                          {status === 'critical' && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Vence em {daysRemaining} dia{daysRemaining !== 1 ? 's' : ''}
+                            </Badge>
+                          )}
+                          {status === 'warning' && (
+                            <Badge className="text-xs bg-amber-500 hover:bg-amber-600">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Vence em {daysRemaining} dias
+                            </Badge>
+                          )}
+                          {status === 'good' && daysRemaining <= 90 && (
+                            <Badge className="text-xs bg-green-500 hover:bg-green-600">
+                              Vence em {daysRemaining} dias
+                            </Badge>
+                          )}
                         </div>
-                        <div>
-                          <CardTitle className="text-xl">{epi.nomeEPI}</CardTitle>
-                          <CardDescription>CA: {epi.ca}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label className="text-muted-foreground text-sm">Fabricante</Label>
+                            <p className="text-lg font-semibold">{epi.fabricante}</p>
+                          </div>
+                          <div>
+                            <Label className="text-muted-foreground text-sm">Validade CA</Label>
+                            <p className={`text-lg font-semibold ${
+                              status === 'expired' || status === 'critical'
+                                ? 'text-destructive'
+                                : status === 'warning'
+                                ? 'text-amber-600'
+                                : ''
+                            }`}>
+                              {new Date(epi.prazoValidadeCA).toLocaleDateString("pt-BR")}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label className="text-muted-foreground text-sm">Fabricante</Label>
-                          <p className="text-lg font-semibold">{epi.fabricante}</p>
+                        <div className="border-t pt-4">
+                          <Label className="text-muted-foreground text-sm">Modo de Utilização</Label>
+                          <p className="mt-2 text-sm leading-relaxed">{epi.modoUtilizacao}</p>
                         </div>
-                        <div>
-                          <Label className="text-muted-foreground text-sm">Validade CA</Label>
-                          <p className="text-lg font-semibold">
-                            {new Date(epi.prazoValidadeCA).toLocaleDateString("pt-BR")}
-                          </p>
+                        <div className="flex gap-2 mt-6">
+                          <Button variant="outline" size="sm" onClick={() => handleViewDetails(epi)}>
+                            Ver Detalhes
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(epi)}>
+                            Editar
+                          </Button>
                         </div>
-                      </div>
-                      <div className="border-t pt-4">
-                        <Label className="text-muted-foreground text-sm">Modo de Utilização</Label>
-                        <p className="mt-2 text-sm leading-relaxed">{epi.modoUtilizacao}</p>
-                      </div>
-                      <div className="flex gap-2 mt-6">
-                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(epi)}>
-                          Ver Detalhes
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(epi)}>
-                          Editar
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
 
                 {searchCA && filteredEpis.length === 0 && (
                   <Card className="shadow-card">
@@ -412,13 +545,14 @@ const EpiConsulta = () => {
                     </div>
 
                     <div className="flex gap-4 pt-4">
-                      <Button type="submit" className="flex-1">
-                        Cadastrar EPI
+                      <Button type="submit" className="flex-1" disabled={isLoading}>
+                        {isLoading ? "Cadastrando..." : "Cadastrar EPI"}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => navigate("/")}
+                        disabled={isLoading}
                       >
                         Cancelar
                       </Button>

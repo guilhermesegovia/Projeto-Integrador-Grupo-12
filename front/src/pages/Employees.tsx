@@ -13,6 +13,7 @@ import Footer from "@/components/Footer";
 import { UserPlus, Search, Shield, User, AlertTriangle, RefreshCw, History, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
+import { funcionariosApi, episApi } from "@/services/api";
 
 const Employees = () => {
   const { toast } = useToast();
@@ -24,25 +25,87 @@ const Employees = () => {
     setor: "",
   });
   const [selectedEmployeeForSwap, setSelectedEmployeeForSwap] = useState<number | null>(null);
+  const [selectedEmployeeForAssign, setSelectedEmployeeForAssign] = useState<string | null>(null);
   const [epiToSwap, setEpiToSwap] = useState<string>("");
   const [newEpiId, setNewEpiId] = useState<string>("");
+  const [epiToAssign, setEpiToAssign] = useState<string>("");
   const [employeesData, setEmployeesData] = useState<any[]>([]);
+  const [episDisponiveis, setEpisDisponiveis] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-  // EPIs disponíveis no sistema
-  const episDisponiveis = [
-    { id: "1", tipo: "Capacete de Segurança", ca: "12345", validade: "2025-12-31" },
-    { id: "2", tipo: "Luvas de Proteção", ca: "67890", validade: "2025-08-15" },
-    { id: "3", tipo: "Óculos de Segurança", ca: "54321", validade: "2025-06-20" },
-    { id: "4", tipo: "Protetor Auricular", ca: "98765", validade: "2026-03-10" },
-  ];
-
-  // Carregar dados do localStorage ao iniciar
+  // Carregar funcionários e EPIs da API
   useEffect(() => {
-    const savedEmployees = localStorage.getItem("employees");
-    if (savedEmployees) {
-      setEmployeesData(JSON.parse(savedEmployees));
-    }
+    loadFuncionarios();
+    loadEPIs();
   }, []);
+
+  const loadFuncionarios = async () => {
+    try {
+      const funcionarios = await funcionariosApi.buscarTodos();
+
+      // Carregar EPIs e histórico para cada funcionário
+      const funcionariosComEpis = await Promise.all(
+        funcionarios.map(async (f: any) => {
+          try {
+            const episAtivos = await episApi.buscarEpisFuncionario(f.cpf);
+            const historico = await episApi.buscarHistoricoFuncionario(f.cpf);
+
+            return {
+              id: f.cpf,
+              nome: f.nome,
+              cpf: f.cpf,
+              cargo: f.cargo,
+              setor: f.setor,
+              epis: episAtivos.map((e: any) => ({
+                tipo: e.epi.tipo,
+                ca: e.epi.CA,
+                validade: e.epi.validade,
+              })),
+              historicoEpis: historico
+                .filter((h: any) => h.dataDevolucao !== null)
+                .map((h: any) => ({
+                  tipo: h.epi.tipo,
+                  ca: h.epi.CA,
+                  dataEntrega: h.dataEntrega,
+                  dataDevolucao: h.dataDevolucao,
+                  motivo: h.motivoSubstituicao,
+                })),
+            };
+          } catch (error) {
+            // Se não houver EPIs ou histórico, retorna funcionário sem EPIs
+            return {
+              id: f.cpf,
+              nome: f.nome,
+              cpf: f.cpf,
+              cargo: f.cargo,
+              setor: f.setor,
+              epis: [],
+              historicoEpis: [],
+            };
+          }
+        })
+      );
+
+      setEmployeesData(funcionariosComEpis);
+    } catch (error: any) {
+      console.error("Erro ao carregar funcionários:", error);
+    }
+  };
+
+  const loadEPIs = async () => {
+    try {
+      const epis = await episApi.buscarTodos();
+      setEpisDisponiveis(epis.map((e: any) => ({
+        id: e.CA,
+        tipo: e.tipo,
+        ca: e.CA,
+        validade: e.validade,
+      })));
+    } catch (error: any) {
+      console.error("Erro ao carregar EPIs:", error);
+    }
+  };
 
   // Função para verificar se o EPI está próximo do vencimento (30 dias)
   const isEpiNearExpiry = (validade: string) => {
@@ -168,31 +231,35 @@ const Employees = () => {
     doc.save(`ficha_${employee.nome.replace(/\s+/g, "_")}.pdf`);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const newEmployee = {
-      id: Date.now(),
-      ...formData,
-      epis: [],
-      historicoEpis: [],
-    };
 
-    const updatedEmployees = [...employeesData, newEmployee];
-    setEmployeesData(updatedEmployees);
-    localStorage.setItem("employees", JSON.stringify(updatedEmployees));
+    setIsLoading(true);
+    try {
+      await funcionariosApi.criar(formData);
 
-    toast({
-      title: "Funcionário cadastrado!",
-      description: `${formData.nome} foi registrado com sucesso.`,
-    });
-    
-    setFormData({
-      nome: "",
-      cpf: "",
-      cargo: "",
-      setor: "",
-    });
+      toast({
+        title: "Funcionário cadastrado!",
+        description: `${formData.nome} foi registrado com sucesso.`,
+      });
+
+      setFormData({
+        nome: "",
+        cpf: "",
+        cargo: "",
+        setor: "",
+      });
+
+      await loadFuncionarios();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao cadastrar",
+        description: error.message || "Erro ao cadastrar funcionário.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSwapEpi = () => {
@@ -206,7 +273,7 @@ const Employees = () => {
     }
 
     const novoEpi = episDisponiveis.find(e => e.id === newEpiId);
-    
+
     toast({
       title: "EPI trocado com sucesso!",
       description: `${epiToSwap} foi substituído por ${novoEpi?.tipo}.`,
@@ -217,6 +284,39 @@ const Employees = () => {
     setNewEpiId("");
   };
 
+  const handleAssignEpi = async () => {
+    if (!selectedEmployeeForAssign || !epiToAssign) {
+      toast({
+        title: "Erro",
+        description: "Selecione um funcionário e um EPI.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await episApi.atribuir(selectedEmployeeForAssign, epiToAssign);
+
+      toast({
+        title: "EPI atribuído com sucesso!",
+        description: "O EPI foi atribuído ao funcionário.",
+      });
+
+      setIsAssignDialogOpen(false);
+      setSelectedEmployeeForAssign(null);
+      setEpiToAssign("");
+
+      // Recarregar funcionários
+      await loadFuncionarios();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atribuir EPI",
+        description: error.message || "Erro ao atribuir EPI ao funcionário.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -224,7 +324,7 @@ const Employees = () => {
     });
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!searchCpf) {
       toast({
         title: "CPF necessário",
@@ -233,10 +333,28 @@ const Employees = () => {
       });
       return;
     }
-    toast({
-      title: "Buscando funcionário...",
-      description: `Pesquisando CPF: ${searchCpf}`,
-    });
+
+    try {
+      const resultado = await funcionariosApi.buscarPorCpf(searchCpf.replace(/\D/g, ""));
+      if (resultado && resultado.length > 0) {
+        toast({
+          title: "Funcionário encontrado!",
+          description: `${resultado.length} funcionário(s) encontrado(s).`,
+        });
+      } else {
+        toast({
+          title: "Nenhum resultado",
+          description: "Funcionário não encontrado.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro na busca",
+        description: error.message || "Erro ao buscar funcionário.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredEmployees = employeesData.filter((emp) =>
@@ -334,17 +452,67 @@ const Employees = () => {
                             <Shield className="w-5 h-5 text-primary" />
                             <h3 className="font-semibold">EPIs em uso</h3>
                           </div>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedEmployeeForSwap(employee.id)}
-                              >
-                                <RefreshCw className="w-4 h-4 mr-2" />
-                                Trocar EPI
-                              </Button>
-                            </DialogTrigger>
+                          <div className="flex gap-2">
+                            <Dialog open={isAssignDialogOpen && selectedEmployeeForAssign === employee.cpf} onOpenChange={(open) => {
+                              setIsAssignDialogOpen(open);
+                              if (!open) {
+                                setSelectedEmployeeForAssign(null);
+                                setEpiToAssign("");
+                              }
+                            }}>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedEmployeeForAssign(employee.cpf);
+                                    setIsAssignDialogOpen(true);
+                                  }}
+                                >
+                                  <Shield className="w-4 h-4 mr-2" />
+                                  Atribuir EPI
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Atribuir EPI ao Funcionário</DialogTitle>
+                                  <DialogDescription>
+                                    Selecione um EPI disponível para atribuir ao funcionário
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div className="space-y-2">
+                                    <Label>Selecione o EPI</Label>
+                                    <Select value={epiToAssign} onValueChange={setEpiToAssign}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione o EPI" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {episDisponiveis.map((epi, index) => (
+                                          <SelectItem key={`assign-${epi.id}-${index}`} value={epi.ca}>
+                                            {epi.tipo} - CA: {epi.ca}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <Button onClick={handleAssignEpi} className="w-full">
+                                    Confirmar Atribuição
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedEmployeeForSwap(employee.id)}
+                                >
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                  Trocar EPI
+                                </Button>
+                              </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
                                 <DialogTitle>Trocar EPI do Funcionário</DialogTitle>
@@ -375,8 +543,8 @@ const Employees = () => {
                                       <SelectValue placeholder="Selecione o novo EPI" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {episDisponiveis.map((epi) => (
-                                        <SelectItem key={epi.id} value={epi.id}>
+                                      {episDisponiveis.map((epi, index) => (
+                                        <SelectItem key={`${epi.id}-${index}`} value={epi.id}>
                                           {epi.tipo} - CA: {epi.ca}
                                         </SelectItem>
                                       ))}
@@ -389,6 +557,7 @@ const Employees = () => {
                               </div>
                             </DialogContent>
                           </Dialog>
+                          </div>
                         </div>
                         <div className="grid gap-3">
                           {employee.epis.map((epi, index) => {
@@ -558,9 +727,9 @@ const Employees = () => {
 
 
                     <div className="flex gap-4 pt-4">
-                      <Button type="submit" className="flex-1">
+                      <Button type="submit" className="flex-1" disabled={isLoading}>
                         <UserPlus className="w-4 h-4 mr-2" />
-                        Cadastrar Funcionário
+                        {isLoading ? "Cadastrando..." : "Cadastrar Funcionário"}
                       </Button>
                     </div>
                   </form>

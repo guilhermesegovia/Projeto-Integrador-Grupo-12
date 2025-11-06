@@ -23,6 +23,23 @@ const Index = () => {
               Controle completo dos equipamentos de proteção individual da sua empresa.
               Segurança, conformidade e eficiência em um único lugar.
             </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                size="lg"
+                className="text-lg px-8 shadow-elevated bg-white text-primary hover:bg-white/90"
+                onClick={() => navigate("/register")}
+              >
+                Começar Agora
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 border-2 border-white text-white hover:bg-white/10"
+                onClick={() => navigate("/login")}
+              >
+                Fazer Login
+              </Button>
+            </div>
           </div>
         </div>
       </section>

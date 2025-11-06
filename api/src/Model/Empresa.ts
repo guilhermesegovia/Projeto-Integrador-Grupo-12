@@ -25,8 +25,8 @@ export class Empresa {
     email: string,
     senha: string
   ) {
-    const hashedPassword = bcrypt.hashSync(senha);
-    return new Empresa(empresa, cnpj, endereco, email, senha);
+    const hashedPassword = bcrypt.hashSync(senha, 10);
+    return new Empresa(empresa, cnpj, endereco, email, hashedPassword);
   }
 
     verifyPassword(senha: string): boolean {

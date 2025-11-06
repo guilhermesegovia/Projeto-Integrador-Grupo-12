@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { API_URL } from "@/config/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { email: string } | null;
-  login: (email: string, password: string) => boolean;
+  user: { email: string; empresa: string; cnpj: string } | null;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -11,7 +12,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; empresa: string; cnpj: string } | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -21,15 +22,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (email: string, password: string) => {
-    if (email && password) {
-      const userData = { email };
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch(`${API_URL}/empresas/autenticacao`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, senha: password }),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+      const userData = {
+        email: data.dados.email,
+        empresa: data.dados.empresa,
+        cnpj: data.dados.cnpj,
+      };
+
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
       setIsAuthenticated(true);
       return true;
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {

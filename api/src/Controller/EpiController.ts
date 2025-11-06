@@ -115,4 +115,58 @@ export function EPIController() {
       return res.status(400).json({ erro: e.message });
     }
   });
+
+  // Atribuir EPI a um funcionário
+  app.post("/epis/atribuir", (req, res) => {
+    try {
+      const { cpfFuncionario, caEPI } = req.body;
+
+      if (!cpfFuncionario || !caEPI) {
+        throw new Error("CPF do funcionário e CA do EPI são obrigatórios.");
+      }
+
+      const atribuicao = service.atribuirEPIFuncionario(cpfFuncionario, caEPI);
+
+      res.status(201).json({
+        status: "EPI atribuído com sucesso ao funcionário.",
+        dados: atribuicao
+      });
+    } catch (e: any) {
+      return res.status(400).json({ erro: e.message });
+    }
+  });
+
+  // Buscar EPIs ativos de um funcionário
+  app.get("/epis/funcionario/:cpf", (req, res) => {
+    try {
+      const { cpf } = req.params;
+
+      if (!cpf) {
+        throw new Error("CPF do funcionário é obrigatório.");
+      }
+
+      const episAtivos = service.getEPIsFuncionario(cpf);
+
+      res.status(200).json(episAtivos);
+    } catch (e: any) {
+      return res.status(400).json({ erro: e.message });
+    }
+  });
+
+  // Buscar histórico completo de EPIs de um funcionário
+  app.get("/epis/funcionario/:cpf/historico", (req, res) => {
+    try {
+      const { cpf } = req.params;
+
+      if (!cpf) {
+        throw new Error("CPF do funcionário é obrigatório.");
+      }
+
+      const historico = service.getHistoricoFuncionario(cpf);
+
+      res.status(200).json(historico);
+    } catch (e: any) {
+      return res.status(400).json({ erro: e.message });
+    }
+  });
 }

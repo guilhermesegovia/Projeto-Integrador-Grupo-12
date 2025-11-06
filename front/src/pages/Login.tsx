@@ -21,9 +21,9 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         title: "Erro",
@@ -33,14 +33,20 @@ const Login = () => {
       return;
     }
 
-    const success = login(email, password);
-    
+    const success = await login(email, password);
+
     if (success) {
       toast({
         title: "Login realizado!",
         description: "Bem-vindo ao Security Pro.",
       });
       navigate('/epi-consulta');
+    } else {
+      toast({
+        title: "Erro ao fazer login",
+        description: "Email ou senha inválidos.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -85,11 +91,23 @@ const Login = () => {
               <Button type="submit" className="w-full" size="lg">
                 Entrar
               </Button>
-              
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full" 
+
+              <div className="text-center text-sm text-muted-foreground">
+                Não tem uma conta?{" "}
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto font-semibold"
+                  onClick={() => navigate("/register")}
+                >
+                  Cadastre sua empresa
+                </Button>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
                 onClick={() => navigate("/")}
               >
                 <ArrowLeft className="mr-2" size={16} />

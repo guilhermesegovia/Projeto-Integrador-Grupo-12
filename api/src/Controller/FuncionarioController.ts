@@ -15,7 +15,7 @@ export function FuncionarioController() {
 
 
 
-  app.post("/funcionarios", (req, res) => {
+  app.post("/api/funcionarios", (req, res) => {
     try {
       const dadosFuncionario = req.body;
       
@@ -35,14 +35,14 @@ export function FuncionarioController() {
   });
 
 
-  app.get("/funcionarios", (req, res) => {
+  app.get("/api/funcionarios", (req, res) => {
     const funcionarios = service.getFuncionarios();
     const funcionariosFormatados = funcionarios.map(formatarFuncionario);
     res.json(funcionariosFormatados);
   });
 
 
-  app.get("/funcionarios/buscar", (req, res) => {
+  app.get("/api/funcionarios/buscar", (req, res) => {
     const { cpf } = req.query; // Apenas CPF
 
     let funcionario: Funcionario[] | undefined;

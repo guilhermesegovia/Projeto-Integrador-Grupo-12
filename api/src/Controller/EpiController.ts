@@ -16,7 +16,7 @@ export function EPIController() {
   });
 
 
-  app.post("/epis", (req, res) => {
+  app.post("/api/epis", (req, res) => {
     try {
       const dadosEPI = req.body;
       
@@ -31,13 +31,13 @@ export function EPIController() {
     }
   });
 
-  app.get("/epis", (req, res) => {
+  app.get("/api/epis", (req, res) => {
     const epis = service.getEPIs();
     const episFormatados = epis.map(formatarEPI);
     res.json(episFormatados);
   });
 
-  app.get("/epis/buscar/ca", (req, res) => {
+  app.get("/api/epis/buscar/ca", (req, res) => {
     const { ca } = req.query; 
 
     if (!ca) {
@@ -55,7 +55,7 @@ export function EPIController() {
     return res.status(200).json(formatarEPI(epi));
   });
 
-  app.get("/epis/buscar/vencimento", (req, res) => {
+  app.get("/api/epis/buscar/vencimento", (req, res) => {
     const dias = req.query.dias ? parseInt(req.query.dias as string) : 90;
 
     if (isNaN(dias) || dias < 0) {
@@ -71,7 +71,7 @@ export function EPIController() {
     });
   });
 
-  app.get("/epis/buscar", (req, res) => {
+  app.get("/api/epis/buscar", (req, res) => {
     const { dataMin, dataMax } = req.query;
 
     if (!dataMin || !dataMax) {
@@ -93,7 +93,7 @@ export function EPIController() {
     return res.status(200).json(episFormatados);
   });
   
-  app.post("/epis/substituicao", (req, res) => {
+  app.post("/api/epis/substituicao", (req, res) => {
     try {
       const { Funcionario, novoEpiData, motivoSubstituicao } = req.body;
 
@@ -117,7 +117,7 @@ export function EPIController() {
   });
 
   // Atribuir EPI a um funcionário
-  app.post("/epis/atribuir", (req, res) => {
+  app.post("/api/epis/atribuir", (req, res) => {
     try {
       const { cpfFuncionario, caEPI } = req.body;
 
@@ -137,7 +137,7 @@ export function EPIController() {
   });
 
   // Buscar EPIs ativos de um funcionário
-  app.get("/epis/funcionario/:cpf", (req, res) => {
+  app.get("/api/epis/funcionario/:cpf", (req, res) => {
     try {
       const { cpf } = req.params;
 
@@ -154,7 +154,7 @@ export function EPIController() {
   });
 
   // Buscar histórico completo de EPIs de um funcionário
-  app.get("/epis/funcionario/:cpf/historico", (req, res) => {
+  app.get("/api/epis/funcionario/:cpf/historico", (req, res) => {
     try {
       const { cpf } = req.params;
 
